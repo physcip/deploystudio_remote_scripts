@@ -55,12 +55,9 @@
 		die('Group does not exist in MunkiServer');
 	}
 	
-	$sqls[] = 'DELETE FROM computers WHERE mac_address = "' . mysql_real_escape_string($mac) . '" OR hostname = "' . mysql_real_escape_string($name . '.' . $domain) . '"';
-	
-	$sqls[] = 'INSERT INTO computers (mac_address, name, computer_model_id, computer_group_id, unit_id, environment_id, created_at, updated_at, hostname, shortname) VALUES ("' . mysql_real_escape_string($mac) . '", "' . mysql_real_escape_string($name) . '", 16, "' . $group_id . '", "' . $unit_id . '", "' . $environment_id . '", NOW(), NOW(), "' . mysql_real_escape_string($name . '.' . $domain) . '", LOWER("' . mysql_real_escape_string($name) . '"))';
-	
-	//foreach ($sqls as $sql)
-	//	mysql_query($sql, $db_conn);
+	/*
+	TODO: use computer_api.rake
+	*/
 	
 	mail($email, 'Register in MunkiServer', print_r($sqls, TRUE));
 ?>
