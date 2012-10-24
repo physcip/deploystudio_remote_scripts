@@ -2,4 +2,6 @@
 	$token = 'qwertzuiopp';
 	$ms_path = '/Volumes/stuff/munkiserver';
 	$email = 'you@yourdomain.local';
+	$unit = 'Default';
+	$rake = '/opt/local/bin/rake1.9';
 ?>

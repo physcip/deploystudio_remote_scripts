@@ -5,6 +5,21 @@
 	if (!array_key_exists('token', $_GET) || $_GET['token'] != $token)
 		die('Invalid token');
 	
+	ob_start();
+	function handle_error($errno, $errstr, $errfile, $errline, $errcontext)
+	{
+		global $email;
+		$string = ob_get_contents();
+		$string .= "\n\n";
+		$string .= $errstr;
+		$string .= "\n\n";
+		$string .= print_r($_GET, TRUE);
+		mail($email, $errstr, $string);
+		
+		die($errstr);
+	}
+	set_error_handler("handle_error");
+	
 	function read_yaml($dbConfig)
 	{
 		foreach ($dbConfig as $line)
@@ -40,7 +55,7 @@
 	$mac = $_GET['mac']; // ${DS_PRIMARY_MAC_ADDRESS}
 	$domain = $_GET['domain']; // ${DS_ASSIGNED_DOMAIN}
 	$name = $_GET['name']; // ${DS_HOSTNAME}
-	//$fullname = $_GET['fullname']; // ${DS_COMPUTERNAME}
+	$fullname = $_GET['computername']; // ${DS_COMPUTERNAME}
 	$group = $_GET['group']; // ${DS_COMPUTER_GROUP}
 	
 	if (array_key_exists($group, $munki_groups))
@@ -48,16 +63,38 @@
 		$group_id = $munki_groups[$group]['id'];
 		$unit_id = $munki_groups[$group]['unit_id'];
 		$environment_id = $munki_groups[$group]['environment_id'];
+		
+		$sql = 'SELECT * FROM environments WHERE id=' . $environment_id;
+		$result = mysql_query($sql,$db_conn) or die(mysql_error());
+		$newArray = mysql_fetch_array($result, MYSQL_ASSOC);
+		$environment = $newArray['name'];
+		
+		$sql = 'SELECT * FROM units WHERE id=' . $unit_id;
+		$result = mysql_query($sql,$db_conn) or die(mysql_error());
+		$newArray = mysql_fetch_array($result, MYSQL_ASSOC);
+		$unit = $newArray['name'];
+		
+		$sql = 'SELECT * FROM computer_groups WHERE id=' . $group_id;
+		$result = mysql_query($sql,$db_conn) or die(mysql_error());
+		$newArray = mysql_fetch_array($result, MYSQL_ASSOC);
+		$group = $newArray['name'];
 	}
 	else
 	{
-		mail($email, 'Group does not exist in MunkiServer', print_r($_GET, TRUE));
-		die('Group does not exist in MunkiServer');
+		trigger_error('Group does not exist in MunkiServer', E_USER_ERROR);
 	}
 	
-	/*
-	TODO: use computer_api.rake
-	*/
+	// switch to MunkiServer directory
+	chdir($ms_path);
 	
-	mail($email, 'Register in MunkiServer', print_r($sqls, TRUE));
+	// delete old computer
+	system($rake . sprintf(' computers:delete[%s,%s] 2>&1', escapeshellarg($name . '.' . $domain), escapeshellarg($mac)));
+	
+	// add new computer
+	system($rake . sprintf(' computers:add[%s,%s,%s,%s,%s,%s] 2>&1', escapeshellarg($fullname), escapeshellarg($name . '.' .  $domain), escapeshellarg($mac), escapeshellarg($unit), escapeshellarg($environment), escapeshellarg($group)));
+	
+	$string = ob_get_contents();
+	$string .= "\n\n";
+	$string .= print_r($_GET, TRUE);
+	mail($email, "Added $name to MunkiServer", $string);
 ?>

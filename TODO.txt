@@ -1,2 +1,0 @@
-- actually enable writing in MunkiServer script
-- Integration with DNS and DHCP server
