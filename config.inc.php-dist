@@ -1,7 +1,20 @@
 <?php
-	$token = 'qwertzuiopp';
+	// General stuff
+	$token = 'qwertzuiop';
+	$email = 'admin@localhost';
+	if (!array_key_exists('token', $_GET) || $_GET['token'] != $token)
+		die('Invalid token'); 
+	
+	// MunkiServer integration
 	$ms_path = '/Volumes/stuff/munkiserver';
-	$email = 'you@yourdomain.local';
 	$unit = 'Default';
 	$rake = '/opt/local/bin/rake1.9';
+
+	// Proteus IPAM integration
+	define('ipam_server', 'https://ipam.rus.uni-stuttgart.de');
+	define('ipam_username', 'user');
+	define('ipam_password', 'password');
+	define('ipam_configuration', 'Uni-Stuttgart');
+	define('ipam_viewName', 'extern');
+	define('allow_v6_only', TRUE);
 ?>

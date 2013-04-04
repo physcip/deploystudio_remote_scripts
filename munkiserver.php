@@ -2,9 +2,6 @@
 	header('Content-type: text/plain');
 	require_once 'config.inc.php';
 	
-	if (!array_key_exists('token', $_GET) || $_GET['token'] != $token)
-		die('Invalid token');
-	
 	ob_start();
 	function handle_error($errno, $errstr, $errfile, $errline, $errcontext)
 	{
