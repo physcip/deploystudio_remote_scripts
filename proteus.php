@@ -10,12 +10,21 @@ function handle_error($errno, $errstr, $errfile, $errline, $errcontext)
 	$string .= "\n\n";
 	$string .= $errstr . ' in ' . $errfile . ':' . $errline;
 	$string .= "\n\n";
-	$string .= print_r($_GET, TRUE);
+	if (isset($_SERVER['HTTPS']))
+		$string .= 'https://';
+	else
+		$string .= 'http://';
+	$string .= $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
 	mail($email, $errstr, $string);
 	
 	die($errstr);
 }
 set_error_handler("handle_error");
+function handle_exception($exception)
+{
+	handle_error(0, $exception->getMessage(), $exception->getFile(), $exception->getLine(), NULL);
+}
+set_exception_handler("handle_exception");
 
 $hostname = $_GET['name']; // ${DS_HOSTNAME}
 $mac = $_GET['mac']; // ${DS_PRIMARY_MAC_ADDRESS}
@@ -89,7 +98,7 @@ if (file_exists('/tmp/ipamcookie.txt'))
 // see if we're authenticated
 try
 {
-	prop2array($client->getSystemInfo());
+	$info = prop2array($client->getSystemInfo());
 }
 // authenticate
 catch (SoapFault $e)
@@ -99,6 +108,7 @@ catch (SoapFault $e)
 		echo "Logging in\n";
 		$client->login(ipam_username, ipam_password);
 		file_put_contents('/tmp/ipamcookie.txt', serialize($client->_cookies));
+		$info = prop2array($client->getSystemInfo());
 	}
 	else
 		throw $e;
@@ -179,10 +189,13 @@ if ($ipaddr !== NULL)
 // create IP6 address
 echo "Creating new IP6 address\n";
 $address6Id = $client->addIP6Address($network6Id, $mac, 'macAddress', '', '');
-$client->assignIP6Address($network6Id, $address6Id, 'MAKE_STATIC', $mac, '', '');
 $ip6addrEntity = $client->getEntityById($address6Id);
 $ip6rec = prop2array($ip6addrEntity->properties);
 $ip6addr = $ip6rec['address'];
+if (version_compare($info['version'], '4.0') < 0)
+	$client->assignIP6Address($network6Id, $address6Id, 'MAKE_STATIC', $mac, '', '');
+else // Proteus 4.0 wants us to specify the IPv6address, not its ID
+	$client->assignIP6Address($network6Id, $ip6addr, 'MAKE_STATIC', $mac, '', '');
 
 // create host record
 if ($ipaddr !== NULL)
