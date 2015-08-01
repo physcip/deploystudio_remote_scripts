@@ -54,6 +54,8 @@
 	$name = $_GET['name']; // ${DS_HOSTNAME}
 	$fullname = $_GET['computername']; // ${DS_COMPUTERNAME}
 	$group = $_GET['group']; // ${DS_COMPUTER_GROUP}
+	if ($group == 'Adminrechner') // the Staging group. needs to install Production packages first.
+		$group = 'Poolrechner';
 	
 	if (array_key_exists($group, $munki_groups))
 	{

@@ -31,6 +31,9 @@ $mac = $_GET['mac']; // ${DS_PRIMARY_MAC_ADDRESS}
 $domainname = $_GET['domain']; // ${DS_ASSIGNED_DOMAIN}
 $ip6addr = $_GET['ip6'];
 
+if ($hostname == '')
+	$hostname = str_replace(':', '', $hostname);
+
 // get $ipaddr
 $iplist1 = file('ip.txt', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
 $iplist = array();
