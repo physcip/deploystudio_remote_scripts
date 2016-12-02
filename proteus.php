@@ -159,7 +159,7 @@ if ($macObj != NULL)
 if ($ipaddr !== NULL)
 {
 	$oldIP = $client->getIP4Address($configurationId, $ipaddr);
-	if ($oldIP !== NULL)
+	if ($oldIP !== NULL && $oldIP->id != 0)
 	{
 		echo "Deleting address\n";
 		$client->delete($oldIP->id);
@@ -168,7 +168,7 @@ if ($ipaddr !== NULL)
 
 // delete IP6 address if exists
 $oldIP6 = $client->getIP6Address($configurationId, $ip6addr);
-if ($oldIP6 !== NULL)
+if ($oldIP6 !== NULL && $oldIP6->id != 0)
 {
 	echo "Deleting IP6 address\n";
 	$client->delete($oldIP6->id);
@@ -176,7 +176,7 @@ if ($oldIP6 !== NULL)
 
 // delete host record if exists
 $oldA = $client->getEntityByName($zoneId, $hostname, 'HostRecord');
-if ($oldA !== NULL)
+if ($oldA !== NULL && $oldA->id != 0)
 {
 	echo "Deleting host\n";
 	$client->delete($oldA->id);
